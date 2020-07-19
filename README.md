@@ -4,7 +4,7 @@ Features
 --------
 - Render file size by file type of moodledata/filedir. 
 
-version 0.1.3
+version 0.1.4
 
 ## License ##
 

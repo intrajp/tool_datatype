@@ -61,6 +61,7 @@ FILE_COMPLETE_FINAL="${OUTPUTDIR}/data_file_size_final"
 ## entry point ##
 if [ ! -z "${1}" ]; then
     DIRECTORY_GIVEN="${1}"
+    DIRECTORY_GIVEN="${DIRECTORY_GIVEN}/filedir"
 else
     exit 1
 fi

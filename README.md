@@ -2,7 +2,7 @@
 
 Features
 --------
-- Render file type size in moodledata. 
+- Render file size by file type of moodledata. 
 
 ## License ##
 

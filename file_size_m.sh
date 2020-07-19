@@ -182,6 +182,7 @@ if [ "${LINES}" -gt 1 ]; then
         unlink "${FILE_COMPLETE2}"
         unlink "${FILE_COMPLETE2_1}"
         echo "Showing file size as byte in ${DIRECTORY_GIVEN}" > "${FILE_COMPLETE_FINAL}"
+        echo "" >> "${FILE_COMPLETE_FINAL}"
         sort -t : -n -r "${OUTPUTFILE2}" >> ${FILE_COMPLETE_FINAL}
         unlink "${OUTPUTFILE2}" 
         echo "" >> "${FILE_COMPLETE_FINAL}"
@@ -191,6 +192,7 @@ else
     SIZE_ALL=$(awk -F" " '{ print $1 }' "${DATA_FILEDIR_TYPE_SIZE_SORT}")
     FILE_TYPE_ONLY=$(awk -F" " '{ s = ""; for (i = 2; i <= NF; i++) s = s $i " "; print s }' "${DATA_FILEDIR_TYPE_SIZE_SORT}")
     echo "Showing file size as byte in ${DIRECTORY_GIVEN}" > "${FILE_COMPLETE_FINAL}"
+    echo "" >> "${FILE_COMPLETE_FINAL}"
     echo "${SIZE_ALL}:${FILE_TYPE_ONLY}" >> "${FILE_COMPLETE_FINAL}"
     echo "" >> "${FILE_COMPLETE_FINAL}"
 fi

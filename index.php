@@ -52,8 +52,8 @@ $outputdir = "$CFG->dataroot" . "/temp/filestorage/output_intrajp";
 $files = scandir($outputdir);
 $cnt = count($files);
 for($i = 0; $i < $cnt; $i++) {
-    if (file_exists($file)) {
-        $contents = file_get_contents($file);
+    if (file_exists($files[$i])) {
+        $contents = file_get_contents($files[$i]);
         $contents = str_replace ("\n", "<br />", $contents);
         echo "$contents";
     }

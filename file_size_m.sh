@@ -26,19 +26,8 @@
 ## Execute this script.
 ## Result file is  ./output_intrajp/data_file_size_final
 ##
-## Version: v0.1.4m
+## Version: v0.1.5m
 ## Written by Shintaro Fujiwara
-#################################
-#echo "This program creates a file in the current directory as file size by file type."
-#echo -n "Directory you want to know file size by file type:"
-#read DIRECTORY_GIVEN 
-#if [ ! -d "${DIRECTORY_GIVEN}" ]; then
-#    echo "${DIRECTORY_GIVEN} does not exist."
-#    exit 1
-#else
-#    echo "${DIRECTORY_GIVEN} exists."
-#    echo "I start."
-#fi
 #################################
 FILE_BASE_EXISTS="filedir_exists"
 FILEDIR_TYPE="filedir_type"
@@ -58,67 +47,7 @@ OUTPUTFILE1="${OUTPUTDIR}/calculated_type_full_name"
 OUTPUTFILE2="${OUTPUTDIR}/calculated_type_final"
 FILE_COMPLETE_FINAL="${OUTPUTDIR}/data_file_size_final"
 
-## entry point ##
-if [ ! -z "${1}" ]; then
-    DIRECTORY_GIVEN="${1}"
-    DIRECTORY_GIVEN="${DIRECTORY_GIVEN}/filedir"
-else
-    exit 1
-fi
-if [ ! -z "${2}" ]; then
-    WORK_DIR="${2}"
-else
-    exit 1
-fi
-pushd "${WORK_DIR}" 
-
-find ${DIRECTORY_GIVEN} -type f -size +1c | xargs ls -l > "${FILEDIR_SIZE_PRE}"
-grep -v "cannot open" "${FILEDIR_SIZE_PRE}" > "${FILEDIR_SIZE}"
-unlink "${FILEDIR_SIZE_PRE}"
-awk -F" " '{ print $9 }'  "${FILEDIR_SIZE}" > "${FILE_BASE_EXISTS}"
-file -f "${FILE_BASE_EXISTS}" > "${FILEDIR_TYPE}"
-awk -F" " '{ s = ""; for (i = 2; i <= NF; i++) s = s $i " "; print s }' "${FILEDIR_TYPE}" > "${DATA_FILEDIR_TYPE}"
-awk -F" " '{ print $5 }'  "${FILEDIR_SIZE}" > "${DATA_FILEDIR_SIZE}"
-rev "${FILEDIR_TYPE}" > "${FILEDIR_TYPE}2"
-awk -F" " '{ s = ""; for (i = 2; i <= NF; i++) s = s $i " "; print s }' "${FILEDIR_TYPE}2" > "${FILEDIR_TYPE}3"
-rev "${FILEDIR_TYPE}3" > "${FILEDIR_TYPE}4"
-awk -F" " '{ print $1 }'  "${FILEDIR_TYPE}" > file_name_from_filetype
-awk -F" " '{ print $9":" }'  "${FILEDIR_SIZE}" > file_name_from_filesize 
-FILE_NAME_FROM_FILESIZE_COUNT=$(wc -c < file_name_from_filesize)
-FILE_NAME_FROM_FILETYPE_COUNT=$(wc -c < file_name_from_filetype)
-
-if [ "${FILE_NAME_FROM_FILESIZE_COUNT}" -eq "${FILE_NAME_FROM_FILETYPE_COUNT}" ]; then
-#    echo ""
-#    echo "Seems like filename from filesize and filename from filetype is the same."
-#    echo "OK to proceed."
-#    echo "I start in 5 seconds."
-    sleep 5 
-else
-#    echo "Something went wrong. Maybe you should tweak a file."
-    exit 1
-fi
-
-unlink "${FILEDIR_TYPE}" 
-unlink "${FILEDIR_TYPE}2" 
-unlink "${FILEDIR_TYPE}3" 
-unlink "${FILEDIR_TYPE}4" 
-unlink "${FILEDIR_SIZE}" 
-paste "${DATA_FILEDIR_SIZE}" "${DATA_FILEDIR_TYPE}" > "${DATA_FILEDIR_TYPE_SIZE}"
-unlink "${DATA_FILEDIR_SIZE}"
-unlink "${DATA_FILEDIR_TYPE}"
-sort -t " " -k 2,2 "${DATA_FILEDIR_TYPE_SIZE}" > "${DATA_FILEDIR_TYPE_SIZE_SORT}"
-unlink "${DATA_FILEDIR_TYPE_SIZE}"
-
-SIZE_ALL=0
-SIZE_ALL_AS_TYPE=0
-TYPE_EACH_PRE=""
-TYPE_EACH=""
-
-if [ -d "${OUTPUTDIR}" ]; then
-    rm -rf "${OUTPUTDIR}" 
-fi
-mkdir "${OUTPUTDIR}" 
-
+## This function sums up file size in certain directory
 function mashup_file_size ()
 {
     SIZE_ALL=0
@@ -158,51 +87,143 @@ function mashup_file_size ()
     done < "${file}" 
 }
 
-LINES=$(wc -l "${DATA_FILEDIR_TYPE_SIZE_SORT}" | awk '{ print $1 }')
-
-GOON=1
-if [ "${LINES}" -gt 1 ]; then
-    mashup_file_size "${DATA_FILEDIR_TYPE_SIZE_SORT}" "${OUTPUTFILE1}" 
-    echo "${SIZE_ALL_AS_TYPE}: ${TYPE_EACH_PRE}" >> "${OUTPUTFILE1}"
-    sed -i -e 's/: /:/g' "${OUTPUTFILE1}" 
-    if [ ! -e "${OUTPUTFILE1}" ]; then
-        echo "${SIZE_ALL_AS_TYPE}: ${TYPE_EACH_PRE}" > "${FILE_COMPLETE_FINAL}"
-        GOON=0
+# This function is the main function of this script
+# $1: root directory which is to be calculated which should be full path
+# $2: working directory in which 'output_intrajp' directory is created
+# $3: sub directory which is actually calculated 
+function do_calculate_size ()
+{
+    ## entry point ##
+    if [ ! -z "${1}" ]; then
+        DIRECTORY_GIVEN="${1}"
+        if [ ! -z "${3}" ]; then
+            DIRECTORY_GIVEN="${DIRECTORY_GIVEN}/${3}"
+            if [ ! -d "${DIRECTORY_GIVEN}" ]; then
+                echo "Directory ${DIRECTORY_GIVEN} does not exist"
+                exit 1
+            else
+                echo "Directory ${DIRECTORY_GIVEN} exists"
+                case "${DIRECTORY_GIVEN}" in
+                    /*) echo "absolute path" ;;
+                    *) echo "Please give absolute path to first variable"
+                        exit 1 
+                esac
+            fi
+        else
+            exit 1
+        fi
+    else
+        exit 1
     fi
-    if [ "${GOON}" = 1 ]; then
-        unlink "${DATA_FILEDIR_TYPE_SIZE_SORT}" 
-        ## here we want to cut long type name
-        awk -F"," '{ print $1 }' "${OUTPUTFILE1}" >  "${FILE_COMPLETE2}"
-        unlink "${OUTPUTFILE1}" 
-        sort -t : -k 2,2 "${FILE_COMPLETE2}" > "${FILE_COMPLETE2_1}"
-        mashup_file_size "${FILE_COMPLETE2_1}" "${OUTPUTFILE2}" 
-        echo "${SIZE_ALL_AS_TYPE}: ${TYPE_EACH_PRE}" >> "${OUTPUTFILE2}"
-        sed -i -e 's/: /:/g' "${OUTPUTFILE2}" 
-        SIZE_ALL=$((SIZE_ALL_AS_TYPE + SIZE_ALL))
-        unlink "${FILE_COMPLETE2}"
-        unlink "${FILE_COMPLETE2_1}"
+    if [ ! -z "${2}" ]; then
+        WORK_DIR="${2}"
+    else
+        exit 1
+    fi
+    pushd "${WORK_DIR}" 
+
+    find ${DIRECTORY_GIVEN} -type f -size +1c | xargs ls -l > "${FILEDIR_SIZE_PRE}"
+    grep -v "cannot open" "${FILEDIR_SIZE_PRE}" > "${FILEDIR_SIZE}"
+    unlink "${FILEDIR_SIZE_PRE}"
+    awk -F" " '{ print $9 }'  "${FILEDIR_SIZE}" > "${FILE_BASE_EXISTS}"
+    file -f "${FILE_BASE_EXISTS}" > "${FILEDIR_TYPE}"
+    awk -F" " '{ s = ""; for (i = 2; i <= NF; i++) s = s $i " "; print s }' "${FILEDIR_TYPE}" > "${DATA_FILEDIR_TYPE}"
+    awk -F" " '{ print $5 }'  "${FILEDIR_SIZE}" > "${DATA_FILEDIR_SIZE}"
+    rev "${FILEDIR_TYPE}" > "${FILEDIR_TYPE}2"
+    awk -F" " '{ s = ""; for (i = 2; i <= NF; i++) s = s $i " "; print s }' "${FILEDIR_TYPE}2" > "${FILEDIR_TYPE}3"
+    rev "${FILEDIR_TYPE}3" > "${FILEDIR_TYPE}4"
+    awk -F" " '{ print $1 }'  "${FILEDIR_TYPE}" > file_name_from_filetype
+    awk -F" " '{ print $9":" }'  "${FILEDIR_SIZE}" > file_name_from_filesize 
+    FILE_NAME_FROM_FILESIZE_COUNT=$(wc -c < file_name_from_filesize)
+    FILE_NAME_FROM_FILETYPE_COUNT=$(wc -c < file_name_from_filetype)
+
+    if [ "${FILE_NAME_FROM_FILESIZE_COUNT}" -eq "${FILE_NAME_FROM_FILETYPE_COUNT}" ]; then
+        sleep 5 
+    else
+        #echo "Something went wrong. Maybe you should tweak a file."
+        exit 1
+    fi
+
+    unlink "${FILEDIR_TYPE}" 
+    unlink "${FILEDIR_TYPE}2" 
+    unlink "${FILEDIR_TYPE}3" 
+    unlink "${FILEDIR_TYPE}4" 
+    unlink "${FILEDIR_SIZE}" 
+    paste "${DATA_FILEDIR_SIZE}" "${DATA_FILEDIR_TYPE}" > "${DATA_FILEDIR_TYPE_SIZE}"
+    unlink "${DATA_FILEDIR_SIZE}"
+    unlink "${DATA_FILEDIR_TYPE}"
+    sort -t " " -k 2,2 "${DATA_FILEDIR_TYPE_SIZE}" > "${DATA_FILEDIR_TYPE_SIZE_SORT}"
+    unlink "${DATA_FILEDIR_TYPE_SIZE}"
+
+    SIZE_ALL=0
+    SIZE_ALL_AS_TYPE=0
+    TYPE_EACH_PRE=""
+    TYPE_EACH=""
+
+    if [ ! -d "${OUTPUTDIR}" ]; then
+        mkdir "${OUTPUTDIR}" 
+    else
+        ## for the former script
+        unlink "${OUTPUTDIR}/data_file_size_final"
+    fi
+
+   LINES=$(wc -l "${DATA_FILEDIR_TYPE_SIZE_SORT}" | awk '{ print $1 }')
+
+    GOON=1
+    if [ "${LINES}" -gt 1 ]; then
+        mashup_file_size "${DATA_FILEDIR_TYPE_SIZE_SORT}" "${OUTPUTFILE1}" 
+        echo "${SIZE_ALL_AS_TYPE}: ${TYPE_EACH_PRE}" >> "${OUTPUTFILE1}"
+        sed -i -e 's/: /:/g' "${OUTPUTFILE1}" 
+        if [ ! -e "${OUTPUTFILE1}" ]; then
+            echo "${SIZE_ALL_AS_TYPE}: ${TYPE_EACH_PRE}" > "${FILE_COMPLETE_FINAL}"
+            GOON=0
+        fi
+        if [ "${GOON}" = 1 ]; then
+            unlink "${DATA_FILEDIR_TYPE_SIZE_SORT}" 
+            ## here we want to cut long type name
+            awk -F"," '{ print $1 }' "${OUTPUTFILE1}" >  "${FILE_COMPLETE2}"
+            unlink "${OUTPUTFILE1}" 
+            sort -t : -k 2,2 "${FILE_COMPLETE2}" > "${FILE_COMPLETE2_1}"
+            mashup_file_size "${FILE_COMPLETE2_1}" "${OUTPUTFILE2}" 
+            echo "${SIZE_ALL_AS_TYPE}: ${TYPE_EACH_PRE}" >> "${OUTPUTFILE2}"
+            sed -i -e 's/: /:/g' "${OUTPUTFILE2}" 
+            SIZE_ALL=$((SIZE_ALL_AS_TYPE + SIZE_ALL))
+            unlink "${FILE_COMPLETE2}"
+            unlink "${FILE_COMPLETE2_1}"
+            echo "Showing file size as byte in ${DIRECTORY_GIVEN}" > "${FILE_COMPLETE_FINAL}"
+            echo "" >> "${FILE_COMPLETE_FINAL}"
+            sort -t : -n -r "${OUTPUTFILE2}" >> ${FILE_COMPLETE_FINAL}
+            unlink "${OUTPUTFILE2}" 
+            echo "" >> "${FILE_COMPLETE_FINAL}"
+            echo "${SIZE_ALL}:All files" >> "${FILE_COMPLETE_FINAL}"
+        fi
+    else
+        SIZE_ALL=$(awk -F" " '{ print $1 }' "${DATA_FILEDIR_TYPE_SIZE_SORT}")
+        FILE_TYPE_ONLY=$(awk -F" " '{ s = ""; for (i = 2; i <= NF; i++) s = s $i " "; print s }' "${DATA_FILEDIR_TYPE_SIZE_SORT}")
         echo "Showing file size as byte in ${DIRECTORY_GIVEN}" > "${FILE_COMPLETE_FINAL}"
         echo "" >> "${FILE_COMPLETE_FINAL}"
-        sort -t : -n -r "${OUTPUTFILE2}" >> ${FILE_COMPLETE_FINAL}
-        unlink "${OUTPUTFILE2}" 
+        echo "${SIZE_ALL}:${FILE_TYPE_ONLY}" >> "${FILE_COMPLETE_FINAL}"
         echo "" >> "${FILE_COMPLETE_FINAL}"
-        echo "${SIZE_ALL}:All files" >> "${FILE_COMPLETE_FINAL}"
     fi
-else
-    SIZE_ALL=$(awk -F" " '{ print $1 }' "${DATA_FILEDIR_TYPE_SIZE_SORT}")
-    FILE_TYPE_ONLY=$(awk -F" " '{ s = ""; for (i = 2; i <= NF; i++) s = s $i " "; print s }' "${DATA_FILEDIR_TYPE_SIZE_SORT}")
-    echo "Showing file size as byte in ${DIRECTORY_GIVEN}" > "${FILE_COMPLETE_FINAL}"
     echo "" >> "${FILE_COMPLETE_FINAL}"
-    echo "${SIZE_ALL}:${FILE_TYPE_ONLY}" >> "${FILE_COMPLETE_FINAL}"
-    echo "" >> "${FILE_COMPLETE_FINAL}"
+    echo $(date) >> "${FILE_COMPLETE_FINAL}"
+
+    unlink file_name_from_filesize
+    unlink file_name_from_filetype
+    unlink "${FILE_BASE_EXISTS}"
+    mv "${OUTPUTDIR}/data_file_size_final" "${OUTPUTDIR}/${3}"
+
+    popd
+}
+
+if [ -z "${1}" ]; then
+    exit 1
 fi
-echo "" >> "${FILE_COMPLETE_FINAL}"
-echo $(date) >> "${FILE_COMPLETE_FINAL}"
+if [ -z "${2}" ]; then
+    exit 1
+fi
+if [ -z "${3}" ]; then
+    exit 1
+fi
 
-unlink file_name_from_filesize
-unlink file_name_from_filetype
-unlink "${FILE_BASE_EXISTS}"
-
-#echo ""
-#echo "Check result: ${FILE_COMPLETE_FINAL}"
-popd
+do_calculate_size "${1}" "${2}" "${3}"

@@ -31,7 +31,10 @@ function tool_datatype_cron_task($dirroot, $analyzedir, $workdir) {
     \raise_memory_limit(MEMORY_HUGE);
     $datatype_manager = new tool_datatype\datatype_manager();
     $exec_command = "$dirroot/admin/tool/datatype/file_size_m.sh";
-    if ($datatype_manager->processDatatype($exec_command, $analyzedir, $workdir) == false) {
+    if ($datatype_manager->processDatatype($exec_command, $analyzedir, $workdir, "filedir") == false) {
+        return false;
+    }
+    if ($datatype_manager->processDatatype($exec_command, $analyzedir, $workdir, "trashdir") == false) {
         return false;
     }
 }

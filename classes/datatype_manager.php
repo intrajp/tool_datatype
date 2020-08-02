@@ -27,8 +27,8 @@ namespace tool_datatype;
 
 class datatype_manager {
 
-    public function processDatatype($exec_command, $analyze_dir, $work_dir, $sub_dir) {
-        exec ("source $exec_command $analyze_dir $work_dir $sub_dir", $output, $return_var);
+    public function processDatatype($exec_command, $analyze_dir, $work_dir) {
+        exec ("source $exec_command $analyze_dir $work_dir", $output, $return_var);
         if ($return_var == 1) {
             return false;
         }

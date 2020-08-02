@@ -226,4 +226,7 @@ if [ -z "${3}" ]; then
     exit 1
 fi
 
-do_calculate_size "${1}" "${2}" "${3}"
+do_calculate_size "${1}" "${2}" "cache"
+do_calculate_size "${1}" "${2}" "filedir"
+do_calculate_size "${1}" "${2}" "temp"
+do_calculate_size "${1}" "${2}" "trashdir"

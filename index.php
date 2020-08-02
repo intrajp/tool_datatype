@@ -47,7 +47,7 @@ $returnurl = new moodle_url('/admin/tool/datatype/index.php');
 
 echo $OUTPUT->header();
 
-$outputdir = "$CFG->dataroot" . "/temp/filestorage/output_intrajp";
+$outputdir = "$CFG->dataroot" . "/temp/filestorage/output_intrajp/";
 
 $root = scandir($outputdir);
 
@@ -55,7 +55,9 @@ foreach($root as $value ) {
     if ($value === '.' || $value === '..') {
         continue;
     }
-    $contents = file_get_contents($value);
+    echo "$value";
+    echo "<br />";
+    $contents = file_get_contents("$outputdir".$value);
     $contents = str_replace ("\n", "<br />", $contents);
     echo "$contents";
 }

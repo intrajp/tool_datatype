@@ -47,11 +47,17 @@ $returnurl = new moodle_url('/admin/tool/datatype/index.php');
 
 echo $OUTPUT->header();
 
-$file = "$CFG->dataroot" . "/temp/filestorage/output_intrajp/data_file_size_final";
-if (file_exists($file)) {
-    $contents = file_get_contents($file);
+$outputdir = "$CFG->dataroot" . "/temp/filestorage/output_intrajp/";
+$root = scandir($outputdir);
+
+foreach($root as $value ) {
+    if ($value === '.' || $value === '..') {
+        continue;
+    }
+    $contents = file_get_contents("$outputdir".$value);
     $contents = str_replace ("\n", "<br />", $contents);
     echo "$contents";
+    echo "<br />";
 }
 
 echo $OUTPUT->footer();

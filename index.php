@@ -51,6 +51,10 @@ $outputdir = "$CFG->dataroot" . "/temp/filestorage/output_intrajp";
 
 $files = scandir($outputdir);
 $cnt = count($files);
+echo "cnt:$cnt";
+echo "<br />";
+var_dump($cnt);
+
 for($i = 0; $i < $cnt; $i++) {
     if (file_exists($files[$i])) {
         $contents = file_get_contents($files[$i]);

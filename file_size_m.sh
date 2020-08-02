@@ -163,8 +163,8 @@ function do_calculate_size ()
     if [ ! -d "${OUTPUTDIR}" ]; then
         mkdir "${OUTPUTDIR}" 
     else
-        ## for the former script
-        unlink "${OUTPUTDIR}/data_file_size_final"
+        #keep it fresh
+        rm -f "${OUTPUTDIR}/*"
     fi
 
    LINES=$(wc -l "${DATA_FILEDIR_TYPE_SIZE_SORT}" | awk '{ print $1 }')

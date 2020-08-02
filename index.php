@@ -57,6 +57,7 @@ foreach($root as $value ) {
     $contents = file_get_contents("$outputdir".$value);
     $contents = str_replace ("\n", "<br />", $contents);
     echo "$contents";
+    echo "<br />";
 }
 
 echo $OUTPUT->footer();

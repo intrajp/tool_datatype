@@ -160,13 +160,6 @@ function do_calculate_size ()
     TYPE_EACH_PRE=""
     TYPE_EACH=""
 
-    if [ ! -d "${OUTPUTDIR}" ]; then
-        mkdir "${OUTPUTDIR}" 
-    else
-        #keep it fresh
-        rm -f "${OUTPUTDIR}/*"
-    fi
-
    LINES=$(wc -l "${DATA_FILEDIR_TYPE_SIZE_SORT}" | awk '{ print $1 }')
 
     GOON=1
@@ -222,8 +215,12 @@ fi
 if [ -z "${2}" ]; then
     exit 1
 fi
-if [ -z "${3}" ]; then
-    exit 1
+
+if [ ! -d "${2}/${OUTPUTDIR}" ]; then
+    mkdir "${2}/{OUTPUTDIR}" 
+else
+    #we want to remove old files
+    rm -f "${2}/${OUTPUTDIR}/*"
 fi
 
 do_calculate_size "${1}" "${2}" "cache"

@@ -54,6 +54,10 @@ foreach($root as $value ) {
     if ($value === '.' || $value === '..') {
         continue;
     }
+    if (($value !=== 'cache') && ($value !== 'filedir') && 
+        ($value !=== 'temp') && ($value !== 'trashdir')) {
+        continue;
+    }
     $contents = file_get_contents("$outputdir".$value);
     $contents = str_replace ("\n", "<br />", $contents);
     echo "$contents";

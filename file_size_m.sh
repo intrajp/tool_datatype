@@ -26,7 +26,7 @@
 ## Execute this script.
 ## Result file is  ./output_intrajp/data_file_size_final
 ##
-## Version: v0.1.6m
+## Version: v0.1.7m
 ## Written by Shintaro Fujiwara
 #################################
 FILE_BASE_EXISTS="filedir_exists"
@@ -217,7 +217,7 @@ if [ -z "${2}" ]; then
 fi
 
 if [ ! -d "${2}/${OUTPUTDIR}" ]; then
-    mkdir "${2}/{OUTPUTDIR}" 
+    mkdir "${2}/${OUTPUTDIR}" 
 else
     #we want to remove old files
     rm -f "${2}/${OUTPUTDIR}/*"

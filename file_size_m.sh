@@ -225,5 +225,10 @@ fi
 
 do_calculate_size "${1}" "${2}" "cache"
 do_calculate_size "${1}" "${2}" "filedir"
+do_calculate_size "${1}" "${2}" "lang"
+do_calculate_size "${1}" "${2}" "localcache"
+do_calculate_size "${1}" "${2}" "models"
+do_calculate_size "${1}" "${2}" "muc"
+do_calculate_size "${1}" "${2}" "sessions"
 do_calculate_size "${1}" "${2}" "temp"
 do_calculate_size "${1}" "${2}" "trashdir"

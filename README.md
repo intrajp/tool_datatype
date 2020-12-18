@@ -4,10 +4,15 @@ Features
 --------
 - Render file size by file type of moodledata/cache. 
 - Render file size by file type of moodledata/filedir. 
+- Render file size by file type of moodledata/lang. 
+- Render file size by file type of moodledata/localcache. 
+- Render file size by file type of moodledata/models. 
+- Render file size by file type of moodledata/muc. 
+- Render file size by file type of moodledata/sessions. 
 - Render file size by file type of moodledata/temp. 
 - Render file size by file type of moodledata/trashdir. 
 
-version 0.1.6
+version 0.1.9
 
 ## License ##
 

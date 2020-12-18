@@ -54,7 +54,10 @@ foreach($root as $value ) {
     if ($value === '.' || $value === '..') {
         continue;
     }
-    if (($value !== 'cache') && ($value !== 'filedir') && 
+    if (($value !== 'cache') && ($value !== 'filedir') &&
+        ($value !== 'lang') && ($value !== 'localcache') &&
+        ($value !== 'models') && ($value !== 'muc') &&
+        ($value !== 'sessions') &&
         ($value !== 'temp') && ($value !== 'trashdir')) {
         continue;
     }

@@ -26,7 +26,7 @@
 ## Execute this script.
 ## Result file is  ./output_intrajp/data_file_size_final
 ##
-## Version: v0.1.7m
+## Version: v0.1.8m
 ## Written by Shintaro Fujiwara
 #################################
 

@@ -26,48 +26,37 @@
 ## Execute this script.
 ## Result file is  ./output_intrajp/data_file_size_final
 ##
-## Version: v0.1.8m
+## Version: v0.1.9m
 ## Written by Shintaro Fujiwara
 #################################
 
 FILE_TEMP1="intrajp_tmp1"
 FILE_TEMP2="intrajp_tmp2"
-FILE_TEMP3="intrajp_tmp3"
-FILE_TEMP4="intrajp_tmp4"
+FILE_TEMP11="intrajp_tmp11"
+FILE_TEMP12="intrajp_tmp12"
+FILE_TEMP21="intrajp_tmp21"
+FILE_TEMP22="intrajp_tmp22"
+FILE_TEMP23="intrajp_tmp23"
+FILE_TEMP31="intrajp_tmp31"
 
 OUTPUTDIR="output_intrajp"
 
 FILE_COMPLETE_FINAL="${OUTPUTDIR}/data_file_size_final"
 
-function test1()
-{ 
-    local odd=
-    local line_num=1
-    local size_type_this=""
+function test0()
+{
+    { LANG=C; find "${1}" -type f -exec file -i {} \; ; } > "${FILE_TEMP1}" ; awk -F";" '{ print $1 }' "${FILE_TEMP1}" | sort > "${FILE_TEMP2}"
+    LANG=C; find "${1}" -type f -exec du -a {} + | sort -k2 | less > "${FILE_TEMP11}" ; awk -F" " '{ print $2": "$1":" }' "${FILE_TEMP11}" > "${FILE_TEMP12}"
+    join "${FILE_TEMP12}" "${FILE_TEMP2}" > "${FILE_TEMP21}"
+    awk -F":" '{ print $2" "$1" "$3 }' "${FILE_TEMP21}" > "${FILE_TEMP22}" ; sort -k3 "${FILE_TEMP22}" > "${FILE_TEMP23}"
+}
 
-    while read line
-    do
-        if [ $((line_num % 2)) -eq 0 ]; then
-            size_this=$(echo "${line}" | awk -F" " '{ print $1 }')
-            echo "${line}"":""${size_type_this}"
-        else
-            size_type_this=$(echo "${line}" | awk -F":" '{ print $2 }')
-        fi
-        line_num=$((line_num + 1))
-    done < "${FILE_TEMP1}" > "${FILE_TEMP2}"
+function test1()
+{
+    last_line=$(wc -l < "${FILE_TEMP23}")
 }
 
 function test2()
-{
-    sort -t":" -k2 "${FILE_TEMP2}" > "${FILE_TEMP3}"
-}
-
-function test3()
-{
-    last_line=$(wc -l < "${FILE_TEMP3}")
-}
-
-function test4()
 {
     local size_file_type=0
     local size_all=0
@@ -80,7 +69,7 @@ function test4()
         file_type_this=""
 
         size_this=$(echo "${line}" | awk -F" " '{ print $1 }')
-        file_type_this=$(echo "${line}" | awk -F":" '{ print $2 }')
+        file_type_this=$(echo "${line}" | awk -F" " '{ print $3 }')
         if [ ! "${file_type_pre}" == "${file_type_this}" ] && [ "${line_num}" -ne 0 ] ; then
             echo "${size_file_type}"" ""${file_type_pre}"
             size_file_type=0
@@ -95,12 +84,12 @@ function test4()
         if [ "${line_num}" == "${last_line}" ]; then
             echo "${size_all}"" ""Total"
         fi
-    done < "${FILE_TEMP3}" > "${FILE_TEMP4}" 
+    done < "${FILE_TEMP23}" > "${FILE_TEMP31}" 
 }
 
-function test5()
+function test3()
 {
-    sort -n -r -k1 "${FILE_TEMP4}" > "${FILE_COMPLETE_FINAL}"    
+    sort -n -r -k1 "${FILE_TEMP31}" > "${FILE_COMPLETE_FINAL}"
 }
 
 # This function is the main function of this script
@@ -138,17 +127,19 @@ function do_calculate_size ()
     fi
     pushd "${WORK_DIR}" 
 
-    { LANG=C; find "${1}" -type f -exec file {} \; -exec du -c {} \; ; } > "${FILE_TEMP1}" ; sed -i '/total/d' "${FILE_TEMP1}"
-
+    test0 "${3}"
     test1
     test2
     test3
-    test4
-    test5
+
     unlink "${FILE_TEMP1}"
     unlink "${FILE_TEMP2}"
-    unlink "${FILE_TEMP3}"
-    unlink "${FILE_TEMP4}"
+    unlink "${FILE_TEMP11}"
+    unlink "${FILE_TEMP12}"
+    unlink "${FILE_TEMP21}"
+    unlink "${FILE_TEMP22}"
+    unlink "${FILE_TEMP23}"
+    unlink "${FILE_TEMP31}"
 
     mv "${OUTPUTDIR}/data_file_size_final" "${OUTPUTDIR}/${3}"
 

@@ -37,6 +37,7 @@ FILE_TEMP12="intrajp_tmp12"
 FILE_TEMP21="intrajp_tmp21"
 FILE_TEMP22="intrajp_tmp22"
 FILE_TEMP23="intrajp_tmp23"
+FILE_TEMP24="intrajp_tmp24"
 FILE_TEMP31="intrajp_tmp31"
 
 OUTPUTDIR="output_intrajp"
@@ -49,11 +50,12 @@ function test0()
     LANG=C; find "${1}" -type f -exec du -a {} + | sort -k2 | less > "${FILE_TEMP11}" ; awk -F" " '{ print $2": "$1":" }' "${FILE_TEMP11}" > "${FILE_TEMP12}"
     join "${FILE_TEMP12}" "${FILE_TEMP2}" > "${FILE_TEMP21}"
     awk -F":" '{ print $2" "$1";"$3 }' "${FILE_TEMP21}" > "${FILE_TEMP22}" ; sort -k3 "${FILE_TEMP22}" > "${FILE_TEMP23}"
+    awk -F"," '{ print $1 }' "${FILE_TEMP23}" > "${FILE_TEMP24}"
 }
 
 function test1()
 {
-    last_line=$(wc -l < "${FILE_TEMP23}")
+    last_line=$(wc -l < "${FILE_TEMP24}")
 }
 
 function test2()
@@ -85,7 +87,7 @@ function test2()
         if [ "${line_num}" == "${last_line}" ]; then
             echo "${size_all}"" ""Total"
         fi
-    done < "${FILE_TEMP23}" > "${FILE_TEMP31}" 
+    done < "${FILE_TEMP24}" > "${FILE_TEMP31}" 
 }
 
 function test3()
@@ -140,6 +142,7 @@ function do_calculate_size ()
     unlink "${FILE_TEMP21}"
     unlink "${FILE_TEMP22}"
     unlink "${FILE_TEMP23}"
+    unlink "${FILE_TEMP24}"
     unlink "${FILE_TEMP31}"
 
     mv "${OUTPUTDIR}/data_file_size_final" "${OUTPUTDIR}/${3}"

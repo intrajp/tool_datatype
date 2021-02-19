@@ -45,10 +45,10 @@ FILE_COMPLETE_FINAL="${OUTPUTDIR}/data_file_size_final"
 
 function test0()
 {
-    { LANG=C; find "${1}" -type f -exec file -i {} \; ; } > "${FILE_TEMP1}" ; awk -F";" '{ print $1 }' "${FILE_TEMP1}" | sort > "${FILE_TEMP2}"
+    { LANG=C; find "${1}" -type f -exec file {} \; ; } > "${FILE_TEMP1}" ; awk -F";" '{ print $1 }' "${FILE_TEMP1}" | sort > "${FILE_TEMP2}" 
     LANG=C; find "${1}" -type f -exec du -a {} + | sort -k2 | less > "${FILE_TEMP11}" ; awk -F" " '{ print $2": "$1":" }' "${FILE_TEMP11}" > "${FILE_TEMP12}"
     join "${FILE_TEMP12}" "${FILE_TEMP2}" > "${FILE_TEMP21}"
-    awk -F":" '{ print $2" "$1" "$3 }' "${FILE_TEMP21}" > "${FILE_TEMP22}" ; sort -k3 "${FILE_TEMP22}" > "${FILE_TEMP23}"
+    awk -F":" '{ print $2" "$1";"$3 }' "${FILE_TEMP21}" > "${FILE_TEMP22}" ; sort -k3 "${FILE_TEMP22}" > "${FILE_TEMP23}"
 }
 
 function test1()
@@ -69,7 +69,8 @@ function test2()
         file_type_this=""
 
         size_this=$(echo "${line}" | awk -F" " '{ print $1 }')
-        file_type_this=$(echo "${line}" | awk -F" " '{ print $3 }')
+        file_type_this=$(echo "${line}" | awk -F";" '{ print $2 }')
+
         if [ ! "${file_type_pre}" == "${file_type_this}" ] && [ "${line_num}" -ne 0 ] ; then
             echo "${size_file_type}"" ""${file_type_pre}"
             size_file_type=0
@@ -127,7 +128,7 @@ function do_calculate_size ()
     fi
     pushd "${WORK_DIR}" 
 
-    test0 "${3}"
+    test0 "${DIRECTORY_GIVEN}"
     test1
     test2
     test3

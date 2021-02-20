@@ -26,7 +26,7 @@
 ## Execute this script.
 ## Result file is  ./output_intrajp/data_file_size_final
 ##
-## Version: v0.1.9m
+## Version: v0.1.10m
 ## Written by Shintaro Fujiwara
 #################################
 
@@ -92,7 +92,9 @@ function test2()
 
 function test3()
 {
-    sort -n -r -k1 "${FILE_TEMP31}" > "${FILE_COMPLETE_FINAL}"
+    echo "Showing file size as kbytes in ${DIRECTORY_GIVEN}" > "${FILE_COMPLETE_FINAL}"
+    sort -n -r -k1 "${FILE_TEMP31}" >> "${FILE_COMPLETE_FINAL}"
+    echo $(date) >> "${FILE_COMPLETE_FINAL}"
 }
 
 # This function is the main function of this script

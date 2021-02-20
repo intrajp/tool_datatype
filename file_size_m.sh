@@ -26,7 +26,7 @@
 ## Execute this script.
 ## Result file is  ./output_intrajp/data_file_size_final
 ##
-## Version: v0.1.10m
+## Version: v1.0.0m
 ## Written by Shintaro Fujiwara
 #################################
 
@@ -64,6 +64,7 @@ function test2()
     local size_all=0
     local file_type_pre=""
     local line_num=0
+    local type_changed="no"
 
     while read line
     do
@@ -73,6 +74,7 @@ function test2()
         size_this=$(echo "${line}" | awk -F" " '{ print $1 }')
         file_type_this=$(echo "${line}" | awk -F";" '{ print $2 }')
 
+        ## type had changed, so the sum of size should be echoed
         if [ ! "${file_type_pre}" == "${file_type_this}" ] && [ "${line_num}" -ne 0 ] ; then
             echo "${size_file_type}"" ""${file_type_pre}"
             size_file_type=0
@@ -80,10 +82,14 @@ function test2()
         size_file_type=$((size_file_type + size_this))
         file_type_pre="${file_type_this}"
         line_num=$((line_num + 1))
-        if [ "${line_num}" == "${last_line}" ] && [ "${file_type_pre}" != "${file_type}" ]; then
-            echo "${size_this}"" ""${file_type_this}"
+
+        ## file has only two types or under
+        if [ "${line_num}" == "${last_line}" ] && ( [ "${file_type_pre}" != "${file_type}" ] || [ "${file_type_pre}" != "${file_type}" ] ); then
+            echo "${size_file_type}"" ""${file_type_this}"
         fi
         size_all=$((size_all + size_this))
+
+        ## last line we echo total size
         if [ "${line_num}" == "${last_line}" ]; then
             echo "${size_all}"" ""Total"
         fi

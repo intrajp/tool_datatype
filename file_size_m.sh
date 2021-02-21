@@ -26,12 +26,11 @@
 ## Execute this script.
 ## Result file is  ./output_intrajp/data_file_size_final
 ##
-## Version: v1.0.0m
+## Version: v1.1.4m
 ## Written by Shintaro Fujiwara
 #################################
 
 FILE_TEMP1="intrajp_tmp1"
-FILE_TEMP2="intrajp_tmp2"
 FILE_TEMP11="intrajp_tmp11"
 FILE_TEMP12="intrajp_tmp12"
 FILE_TEMP21="intrajp_tmp21"
@@ -39,6 +38,7 @@ FILE_TEMP22="intrajp_tmp22"
 FILE_TEMP23="intrajp_tmp23"
 FILE_TEMP24="intrajp_tmp24"
 FILE_TEMP31="intrajp_tmp31"
+FILE_TEMP41="intrajp_tmp41"
 
 OUTPUTDIR="output_intrajp"
 
@@ -46,11 +46,12 @@ FILE_COMPLETE_FINAL="${OUTPUTDIR}/data_file_size_final"
 
 function test0()
 {
-    { LANG=C; find "${1}" -type f -exec file {} \; ; } > "${FILE_TEMP1}" ; awk -F";" '{ print $1 }' "${FILE_TEMP1}" | sort > "${FILE_TEMP2}" 
+    LANG=C; find "${1}" -type f -exec file {} \; | awk -F";" '{ print $1 }' | sort > "${FILE_TEMP1}"
     LANG=C; find "${1}" -type f -exec du -a {} + | sort -k2 | less > "${FILE_TEMP11}" ; awk -F" " '{ print $2": "$1":" }' "${FILE_TEMP11}" > "${FILE_TEMP12}"
-    join "${FILE_TEMP12}" "${FILE_TEMP2}" > "${FILE_TEMP21}"
+    join "${FILE_TEMP12}" "${FILE_TEMP1}" > "${FILE_TEMP21}"
     awk -F":" '{ print $2" "$1";"$3 }' "${FILE_TEMP21}" > "${FILE_TEMP22}" ; sort -k3 "${FILE_TEMP22}" > "${FILE_TEMP23}"
     awk -F"," '{ print $1 }' "${FILE_TEMP23}" > "${FILE_TEMP24}"
+    sed -i -e 's/^[[:space:]]//g' "${FILE_TEMP24}"
 }
 
 function test1()
@@ -60,40 +61,21 @@ function test1()
 
 function test2()
 {
-    local size_file_type=0
-    local size_all=0
-    local file_type_pre=""
-    local line_num=0
-    local type_changed="no"
+    awk -F"; " '{ print $2 }' "${FILE_TEMP24}" | uniq > "${FILE_TEMP41}"
+    local last_line=$(wc -l < "${FILE_TEMP41}")
+    local line_nu=1
+    local size_total=0
 
     while read line
     do
-        size_this=0
-        file_type_this=""
-
-        size_this=$(echo "${line}" | awk -F" " '{ print $1 }')
-        file_type_this=$(echo "${line}" | awk -F";" '{ print $2 }')
-
-        ## type had changed, so the sum of size should be echoed
-        if [ ! "${file_type_pre}" == "${file_type_this}" ] && [ "${line_num}" -ne 0 ] ; then
-            echo "${size_file_type}"" ""${file_type_pre}"
-            size_file_type=0
+        size_sum=$(grep "${line}" "${FILE_TEMP24}" | awk '{ sum += $1 } END { print sum }')
+        size_total=$(($size_total + $size_sum))
+        echo "${size_sum} ${line}"
+        if [ $line_nu -eq $last_line ]; then
+            echo "${size_total} Total"
         fi
-        size_file_type=$((size_file_type + size_this))
-        file_type_pre="${file_type_this}"
-        line_num=$((line_num + 1))
-
-        ## file has only two types or under
-        if [ "${line_num}" == "${last_line}" ] && ( [ "${file_type_pre}" != "${file_type}" ] || [ "${file_type_pre}" != "${file_type}" ] ); then
-            echo "${size_file_type}"" ""${file_type_this}"
-        fi
-        size_all=$((size_all + size_this))
-
-        ## last line we echo total size
-        if [ "${line_num}" == "${last_line}" ]; then
-            echo "${size_all}"" ""Total"
-        fi
-    done < "${FILE_TEMP24}" > "${FILE_TEMP31}" 
+        line_nu=$((line_nu + 1))
+    done < "${FILE_TEMP41}" >> "${FILE_TEMP31}"
 }
 
 function test3()
@@ -144,7 +126,6 @@ function do_calculate_size ()
     test3
 
     unlink "${FILE_TEMP1}"
-    unlink "${FILE_TEMP2}"
     unlink "${FILE_TEMP11}"
     unlink "${FILE_TEMP12}"
     unlink "${FILE_TEMP21}"
@@ -152,8 +133,10 @@ function do_calculate_size ()
     unlink "${FILE_TEMP23}"
     unlink "${FILE_TEMP24}"
     unlink "${FILE_TEMP31}"
+    unlink "${FILE_TEMP41}"
 
-    mv "${OUTPUTDIR}/data_file_size_final" "${OUTPUTDIR}/${3}"
+    unlink "${OUTPUTDIR}/${3}"
+    mv "${FILE_COMPLETE_FINAL}" "${OUTPUTDIR}/${3}"
 
     popd
 }

@@ -39,7 +39,7 @@ FILE_TEMP22="intrajp_tmp22"
 FILE_TEMP23="intrajp_tmp23"
 FILE_TEMP24="intrajp_tmp24"
 FILE_TEMP31="intrajp_tmp31"
-FILE_TEMP31="intrajp_tmp41"
+FILE_TEMP41="intrajp_tmp41"
 
 OUTPUTDIR="output_intrajp"
 
@@ -62,8 +62,8 @@ function test1()
 function test2()
 {
     awk -F"; " '{ print $2 }' "${FILE_TEMP24}" | uniq > "${FILE_TEMP41}"
-    last_line=$(wc -l < "${FILE_TEMP41}")
-    line_nu=1
+    local last_line=$(wc -l < "${FILE_TEMP41}")
+    local line_nu=1
     local size_total=0
 
     while read line

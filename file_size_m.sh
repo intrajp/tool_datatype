@@ -26,7 +26,7 @@
 ## Execute this script.
 ## Result file is  ./output_intrajp/data_file_size_final
 ##
-## Version: v1.0.0m
+## Version: v1.1.0m
 ## Written by Shintaro Fujiwara
 #################################
 
@@ -39,6 +39,7 @@ FILE_TEMP22="intrajp_tmp22"
 FILE_TEMP23="intrajp_tmp23"
 FILE_TEMP24="intrajp_tmp24"
 FILE_TEMP31="intrajp_tmp31"
+FILE_TEMP31="intrajp_tmp41"
 
 OUTPUTDIR="output_intrajp"
 
@@ -60,40 +61,21 @@ function test1()
 
 function test2()
 {
-    local size_file_type=0
-    local size_all=0
-    local file_type_pre=""
-    local line_num=0
-    local type_changed="no"
+    awk -F"; " '{ print $2 }' "${FILE_TEMP24}" | uniq > "${FILE_TEMP41}"
+    last_line=$(wc -l < "${FILE_TEMP41}")
+    line_nu=1
+    local size_total=0
 
     while read line
     do
-        size_this=0
-        file_type_this=""
-
-        size_this=$(echo "${line}" | awk -F" " '{ print $1 }')
-        file_type_this=$(echo "${line}" | awk -F";" '{ print $2 }')
-
-        ## type had changed, so the sum of size should be echoed
-        if [ ! "${file_type_pre}" == "${file_type_this}" ] && [ "${line_num}" -ne 0 ] ; then
-            echo "${size_file_type}"" ""${file_type_pre}"
-            size_file_type=0
+        size_sum=$(grep "${line}" "${FILE_TEMP24}" | awk '{ sum += $1 } END { print sum }')
+        size_total=$((size_total+size_sum))
+        echo "${size_sum} ${line}"
+        if [ $line_nu -eq $last_line ]; then
+            echo "${size_total} Total"
         fi
-        size_file_type=$((size_file_type + size_this))
-        file_type_pre="${file_type_this}"
-        line_num=$((line_num + 1))
-
-        ## file has only two types or under
-        if [ "${line_num}" == "${last_line}" ] && ( [ "${file_type_pre}" != "${file_type}" ] || [ "${file_type_pre}" != "${file_type}" ] ); then
-            echo "${size_file_type}"" ""${file_type_this}"
-        fi
-        size_all=$((size_all + size_this))
-
-        ## last line we echo total size
-        if [ "${line_num}" == "${last_line}" ]; then
-            echo "${size_all}"" ""Total"
-        fi
-    done < "${FILE_TEMP24}" > "${FILE_TEMP31}" 
+        line_nu=$((line_nu+1))
+    done < "${FILE_TEMP41}" >> "${FILE_TEMP31}"
 }
 
 function test3()
@@ -152,6 +134,7 @@ function do_calculate_size ()
     unlink "${FILE_TEMP23}"
     unlink "${FILE_TEMP24}"
     unlink "${FILE_TEMP31}"
+    unlink "${FILE_TEMP41}"
 
     mv "${OUTPUTDIR}/data_file_size_final" "${OUTPUTDIR}/${3}"
 

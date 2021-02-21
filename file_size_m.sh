@@ -26,12 +26,11 @@
 ## Execute this script.
 ## Result file is  ./output_intrajp/data_file_size_final
 ##
-## Version: v1.1.2m
+## Version: v1.1.4m
 ## Written by Shintaro Fujiwara
 #################################
 
 FILE_TEMP1="intrajp_tmp1"
-FILE_TEMP2="intrajp_tmp2"
 FILE_TEMP11="intrajp_tmp11"
 FILE_TEMP12="intrajp_tmp12"
 FILE_TEMP21="intrajp_tmp21"
@@ -70,7 +69,7 @@ function test2()
     while read line
     do
         size_sum=$(grep "${line}" "${FILE_TEMP24}" | awk '{ sum += $1 } END { print sum }')
-        size_total=$(echo "$size_total + $size_sum" | bc)
+        size_total=$(($size_total + $size_sum))
         echo "${size_sum} ${line}"
         if [ $line_nu -eq $last_line ]; then
             echo "${size_total} Total"

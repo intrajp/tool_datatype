@@ -136,7 +136,8 @@ function do_calculate_size ()
     unlink "${FILE_TEMP31}"
     unlink "${FILE_TEMP41}"
 
-    mv "${OUTPUTDIR}/data_file_size_final" "${OUTPUTDIR}/${3}"
+    unlink "${OUTPUTDIR}/${3}"
+    mv "${FILE_COMPLETE_FINAL}" "${OUTPUTDIR}/${3}"
 
     popd
 }

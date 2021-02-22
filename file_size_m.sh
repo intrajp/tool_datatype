@@ -26,7 +26,7 @@
 ## Execute this script.
 ## Result file is  ./output_intrajp/data_file_size_final
 ##
-## Version: v1.1.4m
+## Version: v1.1.5m
 ## Written by Shintaro Fujiwara
 #################################
 
@@ -56,14 +56,7 @@ function test0()
 
 function test1()
 {
-    last_line=$(wc -l < "${FILE_TEMP24}")
-}
-
-function test2()
-{
     awk -F"; " '{ print $2 }' "${FILE_TEMP24}" | uniq > "${FILE_TEMP41}"
-    local last_line=$(wc -l < "${FILE_TEMP41}")
-    local line_nu=1
     local size_total=0
 
     while read line
@@ -71,16 +64,10 @@ function test2()
         size_sum=$(grep "${line}" "${FILE_TEMP24}" | awk '{ sum += $1 } END { print sum }')
         size_total=$(($size_total + $size_sum))
         echo "${size_sum} ${line}"
-        if [ $line_nu -eq $last_line ]; then
-            echo "${size_total} Total"
-        fi
-        line_nu=$((line_nu + 1))
     done < "${FILE_TEMP41}" >> "${FILE_TEMP31}"
-}
 
-function test3()
-{
-    echo "Showing file size as kbytes in ${DIRECTORY_GIVEN}" > "${FILE_COMPLETE_FINAL}"
+    echo "Showing file size as KBytes in ${DIRECTORY_GIVEN}" > "${FILE_COMPLETE_FINAL}"
+    echo "${size_total} Total" >> "${FILE_COMPLETE_FINAL}"
     sort -n -r -k1 "${FILE_TEMP31}" >> "${FILE_COMPLETE_FINAL}"
     echo $(date) >> "${FILE_COMPLETE_FINAL}"
 }
@@ -122,8 +109,6 @@ function do_calculate_size ()
 
     test0 "${DIRECTORY_GIVEN}"
     test1
-    test2
-    test3
 
     unlink "${FILE_TEMP1}"
     unlink "${FILE_TEMP11}"

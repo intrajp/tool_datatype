@@ -26,7 +26,7 @@
 ## Execute this script.
 ## Result file is  ./output_intrajp/data_file_size_final
 ##
-## Version: v1.1.4m
+## Version: v1.1.7m
 ## Written by Shintaro Fujiwara
 #################################
 
@@ -36,7 +36,6 @@ FILE_TEMP12="intrajp_tmp12"
 FILE_TEMP21="intrajp_tmp21"
 FILE_TEMP22="intrajp_tmp22"
 FILE_TEMP23="intrajp_tmp23"
-FILE_TEMP24="intrajp_tmp24"
 FILE_TEMP31="intrajp_tmp31"
 FILE_TEMP41="intrajp_tmp41"
 
@@ -47,41 +46,29 @@ FILE_COMPLETE_FINAL="${OUTPUTDIR}/data_file_size_final"
 function test0()
 {
     LANG=C; find "${1}" -type f -exec file {} \; | awk -F";" '{ print $1 }' | sort > "${FILE_TEMP1}"
-    LANG=C; find "${1}" -type f -exec du -a {} + | sort -k2 | less > "${FILE_TEMP11}" ; awk -F" " '{ print $2": "$1":" }' "${FILE_TEMP11}" > "${FILE_TEMP12}"
+    LANG=C; find "${1}" -type f -exec du -a {} + | sort -k2 | less > "${FILE_TEMP11}"
+    awk -F" " '{ print $2": "$1":" }' "${FILE_TEMP11}" > "${FILE_TEMP12}"
     join "${FILE_TEMP12}" "${FILE_TEMP1}" > "${FILE_TEMP21}"
-    awk -F":" '{ print $2" "$1";"$3 }' "${FILE_TEMP21}" > "${FILE_TEMP22}" ; sort -k3 "${FILE_TEMP22}" > "${FILE_TEMP23}"
-    awk -F"," '{ print $1 }' "${FILE_TEMP23}" > "${FILE_TEMP24}"
-    sed -i -e 's/^[[:space:]]//g' "${FILE_TEMP24}"
+    awk -F":" '{ print $2" "$1";"$3 }' "${FILE_TEMP21}" | sort -k3 > "${FILE_TEMP22}"
+    awk -F"," '{ print $1 }' "${FILE_TEMP22}" > "${FILE_TEMP23}"
+    sed -i -e 's/^[[:space:]]//g' "${FILE_TEMP23}"
 }
 
 function test1()
 {
-    last_line=$(wc -l < "${FILE_TEMP24}")
-}
-
-function test2()
-{
-    awk -F"; " '{ print $2 }' "${FILE_TEMP24}" | uniq > "${FILE_TEMP41}"
-    local last_line=$(wc -l < "${FILE_TEMP41}")
-    local line_nu=1
+    awk -F"; " '{ print $2 }' "${FILE_TEMP23}" | uniq > "${FILE_TEMP41}"
     local size_total=0
 
     while read line
     do
-        size_sum=$(grep "${line}" "${FILE_TEMP24}" | awk '{ sum += $1 } END { print sum }')
+        size_sum=$(grep "${line}" "${FILE_TEMP23}" | awk '{ sum += $1 } END { print sum }')
         size_total=$(($size_total + $size_sum))
         echo "${size_sum} ${line}"
-        if [ $line_nu -eq $last_line ]; then
-            echo "${size_total} Total"
-        fi
-        line_nu=$((line_nu + 1))
     done < "${FILE_TEMP41}" >> "${FILE_TEMP31}"
-}
 
-function test3()
-{
-    echo "Showing file size as kbytes in ${DIRECTORY_GIVEN}" > "${FILE_COMPLETE_FINAL}"
-    sort -n -r -k1 "${FILE_TEMP31}" >> "${FILE_COMPLETE_FINAL}"
+    echo "Showing file size as KBytes in ${DIRECTORY_GIVEN}" > "${FILE_COMPLETE_FINAL}"
+    echo "${size_total} Total" >> "${FILE_COMPLETE_FINAL}"
+    sort -n -k1gr "${FILE_TEMP31}" >> "${FILE_COMPLETE_FINAL}"
     echo $(date) >> "${FILE_COMPLETE_FINAL}"
 }
 
@@ -122,8 +109,6 @@ function do_calculate_size ()
 
     test0 "${DIRECTORY_GIVEN}"
     test1
-    test2
-    test3
 
     unlink "${FILE_TEMP1}"
     unlink "${FILE_TEMP11}"
@@ -131,7 +116,6 @@ function do_calculate_size ()
     unlink "${FILE_TEMP21}"
     unlink "${FILE_TEMP22}"
     unlink "${FILE_TEMP23}"
-    unlink "${FILE_TEMP24}"
     unlink "${FILE_TEMP31}"
     unlink "${FILE_TEMP41}"
 

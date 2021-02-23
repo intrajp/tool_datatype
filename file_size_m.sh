@@ -68,7 +68,7 @@ function create_output_file()
     while read line
     do
         size_sum=$(grep "${line}" "${SIZE_TYPE_FILE}" | awk '{ sum += $1 } END { print sum }')
-        size_total=$(($size_total + $size_sum))
+        size_total=$((size_total + size_sum))
         echo "${size_sum} ${line}"
     done < "${TYPE_FILE}" >> "${SIZE_CALCULATED_FILE}"
     echo "Showing file size as KBytes in ${directory_given}" > "${FILE_COMPLETE_FINAL}"

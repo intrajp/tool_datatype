@@ -12,7 +12,7 @@ Features
 - Render file size by file type of moodledata/temp. 
 - Render file size by file type of moodledata/trashdir. 
 
-version 1.2.0
+version 1.2.1
 
 ## License ##
 

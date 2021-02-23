@@ -26,7 +26,7 @@
 ## Execute this script.
 ## Result file is  ./output_intrajp/data_file_size_final
 ##
-## Version: v1.1.7m
+## Version: v1.2.0m
 ## Written by Shintaro Fujiwara
 #################################
 
@@ -38,6 +38,10 @@ FILE_TEMP22="intrajp_tmp22"
 FILE_TEMP23="intrajp_tmp23"
 FILE_TEMP31="intrajp_tmp31"
 FILE_TEMP41="intrajp_tmp41"
+FILE_TEMP51="intrajp_tmp51"
+FILE_TEMP52="intrajp_tmp52"
+FILE_TEMP53="intrajp_tmp53"
+FILE_TEMP61="intrajp_tmp61"
 
 OUTPUTDIR="output_intrajp"
 
@@ -50,22 +54,23 @@ function test0()
     awk -F" " '{ print $2": "$1":" }' "${FILE_TEMP11}" > "${FILE_TEMP12}"
     join "${FILE_TEMP12}" "${FILE_TEMP1}" > "${FILE_TEMP21}"
     awk -F":" '{ print $2" "$1";"$3 }' "${FILE_TEMP21}" | sort -k3 > "${FILE_TEMP22}"
-    awk -F"," '{ print $1 }' "${FILE_TEMP22}" > "${FILE_TEMP23}"
-    sed -i -e 's/^[[:space:]]//g' "${FILE_TEMP23}"
+    awk -F";" '{ print $1 }' "${FILE_TEMP22}" > "${FILE_TEMP51}"
+    awk -F";" '{ print $2 }' "${FILE_TEMP22}" > "${FILE_TEMP52}"
+    awk -F"," '{ print ";"$1 }' "${FILE_TEMP52}" > "${FILE_TEMP53}"
+    paste "${FILE_TEMP51}" "${FILE_TEMP53}" > "${FILE_TEMP61}"
+    sed -i -e 's/^[[:space:]]//g' "${FILE_TEMP61}"
 }
 
 function test1()
 {
-    awk -F"; " '{ print $2 }' "${FILE_TEMP23}" | uniq > "${FILE_TEMP41}"
+    awk -F"; " '{ print $2 }' "${FILE_TEMP61}" | uniq > "${FILE_TEMP41}"
     local size_total=0
-
     while read line
     do
-        size_sum=$(grep "${line}" "${FILE_TEMP23}" | awk '{ sum += $1 } END { print sum }')
+        size_sum=$(grep "${line}" "${FILE_TEMP61}" | awk '{ sum += $1 } END { print sum }')
         size_total=$(($size_total + $size_sum))
         echo "${size_sum} ${line}"
     done < "${FILE_TEMP41}" >> "${FILE_TEMP31}"
-
     echo "Showing file size as KBytes in ${DIRECTORY_GIVEN}" > "${FILE_COMPLETE_FINAL}"
     echo "${size_total} Total" >> "${FILE_COMPLETE_FINAL}"
     sort -n -k1gr "${FILE_TEMP31}" >> "${FILE_COMPLETE_FINAL}"
@@ -118,6 +123,10 @@ function do_calculate_size ()
     unlink "${FILE_TEMP23}"
     unlink "${FILE_TEMP31}"
     unlink "${FILE_TEMP41}"
+    unlink "${FILE_TEMP51}"
+    unlink "${FILE_TEMP52}"
+    unlink "${FILE_TEMP53}"
+    unlink "${FILE_TEMP61}"
 
     unlink "${OUTPUTDIR}/${3}"
     mv "${FILE_COMPLETE_FINAL}" "${OUTPUTDIR}/${3}"

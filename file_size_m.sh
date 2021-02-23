@@ -26,7 +26,7 @@
 ## Execute this script.
 ## Result file is  ./output_intrajp/data_file_size_final
 ##
-## Version: v1.2.2m
+## Version: v1.2.3m
 ## Written by Shintaro Fujiwara
 #################################
 
@@ -35,7 +35,6 @@ FILE_TEMP11="intrajp_tmp11"
 FILE_TEMP12="intrajp_tmp12"
 FILE_TEMP21="intrajp_tmp21"
 FILE_TEMP22="intrajp_tmp22"
-FILE_TEMP23="intrajp_tmp23"
 FILE_TEMP51="intrajp_tmp51"
 FILE_TEMP52="intrajp_tmp52"
 FILE_TEMP53="intrajp_tmp53"
@@ -122,7 +121,6 @@ function do_calculate_size ()
     unlink "${FILE_TEMP12}"
     unlink "${FILE_TEMP21}"
     unlink "${FILE_TEMP22}"
-    unlink "${FILE_TEMP23}"
     unlink "${FILE_TEMP51}"
     unlink "${FILE_TEMP52}"
     unlink "${FILE_TEMP53}"

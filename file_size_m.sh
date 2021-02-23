@@ -26,7 +26,7 @@
 ## Execute this script.
 ## Result file is  ./output_intrajp/data_file_size_final
 ##
-## Version: v1.2.0m
+## Version: v1.2.1m
 ## Written by Shintaro Fujiwara
 #################################
 
@@ -36,18 +36,18 @@ FILE_TEMP12="intrajp_tmp12"
 FILE_TEMP21="intrajp_tmp21"
 FILE_TEMP22="intrajp_tmp22"
 FILE_TEMP23="intrajp_tmp23"
-FILE_TEMP31="intrajp_tmp31"
-FILE_TEMP41="intrajp_tmp41"
 FILE_TEMP51="intrajp_tmp51"
 FILE_TEMP52="intrajp_tmp52"
 FILE_TEMP53="intrajp_tmp53"
-FILE_TEMP61="intrajp_tmp61"
+SIZE_TYPE_FILE="intrajp_size_type"
+TYPE_FILE="intrajp_type"
+SIZE_CALCULATED_FILE="intrajp_size_calculated"
 
 OUTPUTDIR="output_intrajp"
 
 FILE_COMPLETE_FINAL="${OUTPUTDIR}/data_file_size_final"
 
-function test0()
+function create_size_type_file()
 {
     LANG=C; find "${1}" -type f -exec file {} \; | awk -F";" '{ print $1 }' | sort > "${FILE_TEMP1}"
     LANG=C; find "${1}" -type f -exec du -a {} + | sort -k2 | less > "${FILE_TEMP11}"
@@ -57,23 +57,24 @@ function test0()
     awk -F";" '{ print $1 }' "${FILE_TEMP22}" > "${FILE_TEMP51}"
     awk -F";" '{ print $2 }' "${FILE_TEMP22}" > "${FILE_TEMP52}"
     awk -F"," '{ print ";"$1 }' "${FILE_TEMP52}" > "${FILE_TEMP53}"
-    paste "${FILE_TEMP51}" "${FILE_TEMP53}" > "${FILE_TEMP61}"
-    sed -i -e 's/^[[:space:]]//g' "${FILE_TEMP61}"
+    paste "${FILE_TEMP51}" "${FILE_TEMP53}" > "${SIZE_TYPE_FILE}"
+    sed -i -e 's/^[[:space:]]//g' "${SIZE_TYPE_FILE}"
 }
 
-function test1()
+function create_output_file()
 {
-    awk -F"; " '{ print $2 }' "${FILE_TEMP61}" | uniq > "${FILE_TEMP41}"
     local size_total=0
+    local directory_given="${1}"
+    awk -F"; " '{ print $2 }' "${SIZE_TYPE_FILE}" | uniq > "${TYPE_FILE}"
     while read line
     do
-        size_sum=$(grep "${line}" "${FILE_TEMP61}" | awk '{ sum += $1 } END { print sum }')
+        size_sum=$(grep "${line}" "${SIZE_TYPE_FILE}" | awk '{ sum += $1 } END { print sum }')
         size_total=$(($size_total + $size_sum))
         echo "${size_sum} ${line}"
-    done < "${FILE_TEMP41}" >> "${FILE_TEMP31}"
-    echo "Showing file size as KBytes in ${DIRECTORY_GIVEN}" > "${FILE_COMPLETE_FINAL}"
+    done < "${TYPE_FILE}" >> "${SIZE_CALCULATED_FILE}"
+    echo "Showing file size as KBytes in ${directory_given}" > "${FILE_COMPLETE_FINAL}"
     echo "${size_total} Total" >> "${FILE_COMPLETE_FINAL}"
-    sort -n -k1gr "${FILE_TEMP31}" >> "${FILE_COMPLETE_FINAL}"
+    sort -n -k1gr "${SIZE_CALCULATED_FILE}" >> "${FILE_COMPLETE_FINAL}"
     echo $(date) >> "${FILE_COMPLETE_FINAL}"
 }
 
@@ -83,17 +84,18 @@ function test1()
 # $3: sub directory which is actually calculated 
 function do_calculate_size ()
 {
+    local directory_given=""
     ## entry point ##
     if [ ! -z "${1}" ]; then
-        DIRECTORY_GIVEN="${1}"
+        directory_given="${1}"
         if [ ! -z "${3}" ]; then
-            DIRECTORY_GIVEN="${DIRECTORY_GIVEN}/${3}"
-            if [ ! -d "${DIRECTORY_GIVEN}" ]; then
-                echo "Directory ${DIRECTORY_GIVEN} does not exist"
+            directory_given="${directory_given}/${3}"
+            if [ ! -d "${directory_given}" ]; then
+                echo "Directory ${directory_given} does not exist"
                 exit 1
             else
-                echo "Directory ${DIRECTORY_GIVEN} exists"
-                case "${DIRECTORY_GIVEN}" in
+                echo "Directory ${directory_given} exists"
+                case "${directory_given}" in
                     /*) echo "absolute path" ;;
                     *) echo "Please give absolute path to first variable"
                         exit 1 
@@ -112,8 +114,8 @@ function do_calculate_size ()
     fi
     pushd "${WORK_DIR}" 
 
-    test0 "${DIRECTORY_GIVEN}"
-    test1
+    create_size_type_file "${directory_given}"
+    create_output_file "${directory_given}"
 
     unlink "${FILE_TEMP1}"
     unlink "${FILE_TEMP11}"
@@ -121,12 +123,12 @@ function do_calculate_size ()
     unlink "${FILE_TEMP21}"
     unlink "${FILE_TEMP22}"
     unlink "${FILE_TEMP23}"
-    unlink "${FILE_TEMP31}"
-    unlink "${FILE_TEMP41}"
     unlink "${FILE_TEMP51}"
     unlink "${FILE_TEMP52}"
     unlink "${FILE_TEMP53}"
-    unlink "${FILE_TEMP61}"
+    unlink "${SIZE_TYPE_FILE}"
+    unlink "${TYPE_FILE}"
+    unlink "${SIZE_CALCULATED_FILE}"
 
     unlink "${OUTPUTDIR}/${3}"
     mv "${FILE_COMPLETE_FINAL}" "${OUTPUTDIR}/${3}"
